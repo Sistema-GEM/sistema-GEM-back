@@ -124,10 +124,30 @@ app.get('/books', (req, res) => {
     
 })
 
-app.get("/caminhao", async (req,res) => {
-    const caminhao = await Caminhao.find()
-    res.send(caminhao)
-})
+
+app.get("/caminhao", async (req, res) => {
+    const page = parseInt(req.query.page) || 1; // Página atual, padrão é 1
+    const pageSize = parseInt(req.query.pageSize) || 10; // Tamanho da página, padrão é 10
+    const skip = (page - 1) * pageSize; // Quantidade de itens para pular
+
+    try {
+        const totalItems = await Caminhao.countDocuments();
+        const totalPages = Math.ceil(totalItems / pageSize); // Calcula o total de páginas
+
+        const caminhoes = await Caminhao.find()
+            .skip(skip) // Pula os itens necessários para a paginação
+            .limit(pageSize); // Limita o número de itens por página
+
+        res.json({
+            page,
+            totalPages,
+            totalItems,
+            caminhoes
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao buscar os caminhões" });
+    }
+});
 
 app.delete("/caminhao/:id", async (req,res) => {
     const caminhao = await Caminhao.findByIdAndDelete(req.params.id)
