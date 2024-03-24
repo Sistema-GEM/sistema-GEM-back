@@ -2,12 +2,17 @@ const express = require("express");
 const { ServerMonitoringMode } = require("mongodb");
 const mongoose = require('mongoose');
 const cors = require('cors');
+const multer = require('multer');
+
+const fs = require('fs');
+const { google } = require('googleapis');
+const google_api_pasta = '1VGBwa7Nz3QavrXZzXHp9g5auDveVUwmw';
 
 const app = express()
 
 app.use(express.json())
 
-app.use((req, res, next)=>{
+app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     app.use(cors());
     next();
@@ -15,103 +20,129 @@ app.use((req, res, next)=>{
 
 const port = 3000
 
+const User = mongoose.model('User', {
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+  });
+  
+  // Rota de registro de usuário
+  app.post('/register', async (req, res) => {
+    try {
+      const existingUser = await User.findOne({ username: req.body.username });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Nome de usuário já está em uso' });
+      }
+  
+      const newUser = new User({
+        username: req.body.username,
+        password: req.body.password,
+      });
+  
+      await newUser.save();
+      res.status(200).json({ message: 'Usuário registrado com sucesso' });
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao registrar usuário', error: error.message });
+    }
+  });
+
+  app.post('/login', async (req, res) => {
+    try {
+      const user = await User.findOne({ username: req.body.username });
+      if (!user) {
+        return res.status(401).json({ message: 'Credenciais inválidas' });
+      }
+  
+      const validPassword = (req.body.password === user.password);
+      if (!validPassword) {
+        return res.status(401).json({ message: 'Credenciais inválidas' });
+      }
+      res.status(200).json({ message: 'Usuário logado com sucesso' });
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao fazer login', error: error.message });
+    }
+  });
+  
+
 const Caminhao = mongoose.model('Caminhao', {
-    ObraID: String,
-    NumeroFrota: String,
-    Proprietario: String,
-    Placa: String,
-    Anof: String,
-    Marca: String,
-    Modelo: String,
-    Chassi: String,
-    Renavam: String,
-    CRV: String,
-    CNPJ: String,
-    KM: String,
-    Horimetro: String,
-    Data: String,
-    ManutencaoPreventiva: {
-        Data: { type: String },
-        Km: { type: String },
-        Horimetro: { type: String },
-        Reponsavel: { type: String },
-        Local: { type: String },
-        Observacao: { type: String },
-        OleoDoMotor: { type: String },
-        OleoDaCaixa: { type: String },
-        OleoDosDiferenciais: { type: String },
-        OleoDeCubos: { type: String },
-        FiltroMotor: { type: String },
-        FiltroDiesel: { type: String },
-        FiltroRacol: { type: String },
-        FiltroAr: { type: String },
-        FiltroValvula: { type: String },
-        Documentos: { type: String },
+    obraAtual: String,
+    numeroFrota: String,
+    proprietario: String,
+    placa: String,
+    ano: String,
+    marca: String,
+    modelo: String,
+    chassi: String,
+    renavam: String,
+    crv: String,
+    cnpj: String,
+    km: String,
+    horimetro: String,
+    data: String,
+    manutencaoPreventiva: {
+        descricao: String,
+        data: String,
+        km: String,
+        horimetro: String,
+        responsavel: String,
+        local: String,
+        observacao: String,
+        oleoMotor: String,
+        oleoCaixa: String,
+        oleoDiferenciais: String,
+        oleoCubos: String,
+        filtroOleoMotor: String,
+        filtroDiesel: String,
+        filtroRacol: String,
+        filtroAr: String,
+        filtroValvulaApu: String,
+        documentos: [{
+            url: String,
+            data: String,
+            titulo: String
+        }]
     },
-    ManutencaoCorretiva: {
-        Data: { type: String },
-        Km: { type: String },
-        Horimetro: { type: String },
-        GrupoServico: { type: String },
-        DescricaoServico: { type: String },
-        FornecedorPeca: { type: String },
-        ValorPeça: { type: String },
-        FornecedorMaoDeObra: { type: String },
-        ValorMaoDeObra: { type: String },
-        Reponsavel: { type: String },
-        Local: { type: String },
-        Observacao: { type: String },
-        Documentos: { type: String },
+    manutencaoCorretiva: {
+        data: String,
+        km: String,
+        horimetro: String,
+        grupoServico: String,
+        descricao: String,
+        fornecedorPeca: String,
+        valorPeca: String,
+        fornecedorMaoDeObra: String,
+        valorMaoDeObra: String,
+        responsavel: String,
+        local: String,
+        observacao: String,
+        documentos: [{
+            url: String,
+            data: String,
+            titulo: String
+        }]
     },
-    ProtecaoCasco: String,
-    SeguradoraCasco: String,
-    DataRenovacaoCasco: String,
-    TitularCasco: String,
-
-    ProtecaoTerceiros: String,
-    SeguradoraTerceiros: String,
-    DataRenovacaoTerceiros: String,
-    TitularTerceiros: String,
-
-    ProtecaoImplemento: String,
-    SeguradoraCasco: String,
-    DataRenovacaoCasco: String,
-    TitularCasco: String,
+    protecaoCasco: String,
+    seguradoraCasco: String,
+    dataRenovacaoCasco: String,
+    titularApoliceCasco: String,
+    protecaoContraTerceiros: String,
+    seguradoraContraTerceiros: String,
+    dataRenovacaoContraTerceiros: String,
+    titularApoliceContraTerceiros: String,
+    protecaoImplemento: String,
+    seguradoraImplemento: String,
+    dataRenovacaoImplemento: String,
+    titularApoliceImplemento: String,
+    documentos: [{
+        url: String,
+        data: String,
+        titulo: String
+    }]
 
 });
 
-app.post("/", async (req, res) => {
+app.post("/caminhao", async (req, res) => {
     const caminhao = new Caminhao({
-        ObraID: req.body.ObraID,
-        NumeroFrota: req.body.NumeroFrota,
-        Proprietario: req.body.Proprietario,
-        Placa: req.body.Placa,
-        Anof: req.body.Anof,
-        Marca: req.body.Marca,
-        Modelo: req.body.Modelo,
-        Chassi: req.body.Chassi,
-        Renavam: req.body.Renavam,
-        CRV: req.body.CRV,
-        CNPJ: req.body.CNPJ,
-        KM: req.body.KM,
-        Horimetro: req.body.Horimetro,
-        Data: req.body.Data,
-        ManutencaoPreventiva: req.body.ManutencaoPreventiva,
-        ManutencaoCorretiva: req.body.ManutencaoCorretiva,
-        ProtecaoCasco: req.body.ProtecaoCasco,
-        SeguradoraCasco: req.body.SeguradoraCasco,
-        DataRenovacaoCasco: req.body.DataRenovacaoCasco,
-        TitularCasco: req.body.TitularCasco,
-
-        ProtecaoTerceiros: req.body.ProtecaoTerceiros,
-        SeguradoraTerceiros: req.body.SeguradoraTerceiros,
-        DataRenovacaoTerceiros: req.body.DataRenovacaoTerceiros,
-        TitularTerceiros: req.body.TitularTerceiros,
-
-        ProtecaoImplemento: req.body.ProtecaoImplemento,
-        SeguradoraCasco: req.body.SeguradoraCasco,
-        DataRenovacaoCasco: req.body.DataRenovacaoCasco,
-        TitularCasco: req.body.TitularCasco,
+        ...req.body
     })
 
     await caminhao.save()
@@ -121,7 +152,7 @@ app.post("/", async (req, res) => {
 
 app.get('/books', (req, res) => {
     const page = req.query.p || 0
-    
+
 })
 
 
@@ -149,11 +180,39 @@ app.get("/caminhao", async (req, res) => {
     }
 });
 
-app.delete("/caminhao/:id", async (req,res) => {
+app.get("/caminhao/:id", async (req, res) => {
+    const caminhaoId = req.params.id;
+
+    try {
+        const caminhao = await Caminhao.findById(caminhaoId);
+        if (!caminhao) {
+            return res.status(404).json({ error: "Caminhão não encontrado" });
+        }
+        res.json(caminhao);
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao buscar o caminhão por ID" });
+    }
+});
+
+app.put("/caminhao/:id", async (req, res) => {
+    const caminhaoId = req.params.id;
+    const updateData = req.body;
+
+    try {
+        const caminhao = await Caminhao.findByIdAndUpdate(caminhaoId, updateData, { new: true });
+        if (!caminhao) {
+            return res.status(404).json({ error: "Caminhão não encontrado" });
+        }
+        res.json(caminhao);
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao atualizar o caminhão" });
+    }
+});
+
+app.delete("/caminhao/:id", async (req, res) => {
     const caminhao = await Caminhao.findByIdAndDelete(req.params.id)
     return res.send(caminhao)
 })
-
 
 
 app.listen(port, () => {
@@ -161,3 +220,80 @@ app.listen(port, () => {
     console.log('App runnig')
 })
 
+
+
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './uploads');
+    },
+    filename: function (req, file, cb) {
+        const timestamp = new Date().toISOString().replace(/:/g, '-');
+        cb(null, timestamp + '-' + file.originalname);
+    }
+});
+
+const upload = multer({ storage: storage });
+
+app.post('/upload', upload.single('file'), async (req, res) => {
+    try {
+        const auth = new google.auth.GoogleAuth({
+            keyFile: './googledrive.json',
+            scopes: ['https://www.googleapis.com/auth/drive']
+        });
+        const driveService = google.drive({
+            version: 'v3',
+            auth
+        });
+
+        const fileMetaData = {
+            'name': req.file.originalname,
+            'parents': [google_api_pasta]
+        };
+
+        const media = {
+            mimeType: req.file.mimetype,
+            body: fs.createReadStream(req.file.path)
+        };
+
+        const response = await driveService.files.create({
+            resource: fileMetaData,
+            media: media,
+            fields: 'id'
+        });
+
+        const fileId = response.data.id;
+        const link = await getFileLink(fileId);
+        res.json({ fileId: fileId, link: link });
+        // Excluir o arquivo após o processo de envio para o Google Drive
+        fs.unlink(req.file.path, (err) => {
+        });
+    } catch (err) {
+        console.log('Erro ao enviar o arquivo:', err);
+        res.status(500).json({ error: 'Erro ao enviar o arquivo' });
+    }
+});
+
+// Função para obter o link do arquivo no Google Drive
+async function getFileLink(fileId) {
+    try {
+        const auth = new google.auth.GoogleAuth({
+            keyFile: './googledrive.json',
+            scopes: ['https://www.googleapis.com/auth/drive.readonly']
+        });
+        const driveService = google.drive({
+            version: 'v3',
+            auth
+        });
+
+        const response = await driveService.files.get({
+            fileId: fileId,
+            fields: 'webViewLink'
+        });
+
+        return response.data.webViewLink;
+    } catch (err) {
+        console.log('Erro ao recuperar o link do arquivo:', err);
+        throw err;
+    }
+}
