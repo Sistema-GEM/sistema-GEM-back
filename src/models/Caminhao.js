@@ -1,0 +1,87 @@
+const mongoose = require("mongoose");
+
+const caminhaoSchema = new mongoose.Schema({
+  obraAtual: String,
+  numeroFrota: String,
+  proprietario: String,
+  placa: String,
+  ano: String,
+  marca: String,
+  modelo: String,
+  chassi: String,
+  renavam: String,
+  crv: String,
+  cnpj: String,
+  km: String,
+  horimetro: String,
+  data: String,
+  manutencaoPreventiva: {
+    descricao: String,
+    data: String,
+    km: String,
+    horimetro: String,
+    responsavel: String,
+    local: String,
+    observacao: String,
+    oleoMotor: String,
+    oleoCaixa: String,
+    oleoDiferenciais: String,
+    oleoCubos: String,
+    filtroOleoMotor: String,
+    filtroDiesel: String,
+    filtroRacol: String,
+    filtroAr: String,
+    filtroValvulaApu: String,
+    documentos: [
+      {
+        url: String,
+        data: String,
+        titulo: String,
+      },
+    ],
+  },
+  manutencaoCorretiva: {
+    data: String,
+    km: String,
+    horimetro: String,
+    grupoServico: String,
+    descricao: String,
+    fornecedorPeca: String,
+    valorPeca: String,
+    fornecedorMaoDeObra: String,
+    valorMaoDeObra: String,
+    responsavel: String,
+    local: String,
+    observacao: String,
+    documentos: [
+      {
+        url: String,
+        data: String,
+        titulo: String,
+      },
+    ],
+  },
+  protecaoCasco: String,
+  seguradoraCasco: String,
+  dataRenovacaoCasco: String,
+  titularApoliceCasco: String,
+  protecaoContraTerceiros: String,
+  seguradoraContraTerceiros: String,
+  dataRenovacaoContraTerceiros: String,
+  titularApoliceContraTerceiros: String,
+  protecaoImplemento: String,
+  seguradoraImplemento: String,
+  dataRenovacaoImplemento: String,
+  titularApoliceImplemento: String,
+  documentos: [
+    {
+      url: String,
+      data: String,
+      titulo: String,
+    },
+  ],
+});
+
+const Caminhao = mongoose.model("Caminhao", caminhaoSchema);
+
+module.exports = Caminhao;
