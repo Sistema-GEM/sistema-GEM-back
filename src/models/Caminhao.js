@@ -15,7 +15,7 @@ const caminhaoSchema = new mongoose.Schema({
   km: String,
   horimetro: String,
   data: String,
-  manutencaoPreventiva: {
+  manutencaoPreventiva: [{
     descricao: String,
     data: String,
     km: String,
@@ -39,8 +39,8 @@ const caminhaoSchema = new mongoose.Schema({
         titulo: String,
       },
     ],
-  },
-  manutencaoCorretiva: {
+  }],
+  manutencaoCorretiva: [{
     data: String,
     km: String,
     horimetro: String,
@@ -60,7 +60,7 @@ const caminhaoSchema = new mongoose.Schema({
         titulo: String,
       },
     ],
-  },
+  }],
   protecaoCasco: String,
   seguradoraCasco: String,
   dataRenovacaoCasco: String,

@@ -15,11 +15,14 @@ module.exports = {
     const pageSize = parseInt(req.query.pageSize) || 10; // Tamanho da página, padrão é 10
     const skip = (page - 1) * pageSize; // Quantidade de itens para pular
 
+    // Adiciona o filtro para o campo "proprietário"
+    const filter = { ...req.query };
+
     try {
-      const totalItems = await Caminhao.countDocuments();
+      const totalItems = await Caminhao.countDocuments(filter);
       const totalPages = Math.ceil(totalItems / pageSize); // Calcula o total de páginas
 
-      const caminhoes = await Caminhao.find()
+      const caminhoes = await Caminhao.find(filter)
         .skip(skip) // Pula os itens necessários para a paginação
         .limit(pageSize); // Limita o número de itens por página
 
