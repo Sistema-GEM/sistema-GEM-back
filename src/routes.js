@@ -14,6 +14,6 @@ routes.get("/caminhao/:id", CaminhaoController.getById);
 routes.put("/caminhao/:id", CaminhaoController.update);
 routes.delete("/caminhao/:id", CaminhaoController.destroy);
 
-routes.post("/upload", UploadController.upload);
+routes.post("/upload", UploadController.upload, UploadController.uploadFile);
 
 module.exports = routes;
