@@ -16,7 +16,18 @@ module.exports = {
     const skip = (page - 1) * pageSize; // Quantidade de itens para pular
 
     // Adiciona o filtro para o campo "proprietário"
-    const filter = { ...req.query };
+
+    const query = req.query;
+
+    if (query.page) {
+      delete query.page;
+    }
+
+    if (query.pageSize) {
+      delete query.pageSize;
+    }
+
+    const filter = { ...query };
 
     try {
       const totalItems = await Caminhao.countDocuments(filter);
