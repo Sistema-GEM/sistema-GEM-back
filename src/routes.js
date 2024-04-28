@@ -19,6 +19,7 @@ routes.delete("/caminhao/:id", CaminhaoController.destroy);
 routes.post("/obras", ObraController.create);
 routes.put("/obras/:id", ObraController.update);
 routes.get("/obras", ObraController.getAll);
+routes.get("/obras/listar", ObraController.list);
 routes.get("/obras/:id", ObraController.getById);
 routes.post(
   "/obras/verificar-status-caminhao",

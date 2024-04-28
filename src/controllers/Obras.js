@@ -163,4 +163,20 @@ module.exports = {
         .json({ error: "Erro ao verificar associação de caminhões" });
     }
   },
+
+  async list(req, res) {
+    try {
+      const obras = await Obra.find();
+
+      const list = obras.map((obra) => ({
+        label: obra.descricao,
+        value: obra.descricao,
+      }));
+
+      res.json(list);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Erro ao listar obras" });
+    }
+  },
 };
