@@ -15,10 +15,14 @@ routes.get("/caminhao/:id", CaminhaoController.getById);
 routes.put("/caminhao/:id", CaminhaoController.update);
 routes.delete("/caminhao/:id", CaminhaoController.destroy);
 
-
 routes.post("/obras", ObraController.create);
+routes.put("/obras/:id", ObraController.update);
 routes.get("/obras", ObraController.getAll);
 routes.get("/obras/:id", ObraController.getById);
+routes.post(
+  "/obras/verificar-status-caminhao",
+  ObraController.verificarAssociacaoCaminhoes
+);
 
 routes.post("/upload", UploadController.upload, UploadController.uploadFile);
 
