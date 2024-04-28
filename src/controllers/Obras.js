@@ -5,13 +5,26 @@ const { estados } = require("../utils/estados");
 
 module.exports = {
   async create(req, res) {
+    const { caminhoes, estado, situacao } = req.body;
+
     const obra = new Obra({
       ...req.body,
-      estadoSigla: estados.find((e) => e.nome === req.body.estado)?.sigla,
+      estadoSigla: estados.find((e) => e.nome === estado)?.sigla,
     });
 
     try {
       await obra.save();
+      await Promise.all(
+        caminhoes.map(async (caminhaoId) => {
+          const caminhao = await Caminhao.findById(caminhaoId);
+          if (caminhao) {
+            caminhao.obraAtual =
+              situacao === "Em andamento" ? obra.descricao : null;
+            await caminhao.save();
+          }
+        })
+      );
+
       res.send(obra);
     } catch (error) {
       res.status(500).json({ error: "Erro ao criar a obra" });
@@ -75,11 +88,31 @@ module.exports = {
   async update(req, res) {
     const obraId = req.params.id;
     const updateData = req.body;
+    const { caminhoes, situacao, estado } = req.body;
 
     try {
-      const obra = await Obra.findByIdAndUpdate(obraId, updateData, {
-        new: true,
-      });
+      const obra = await Obra.findByIdAndUpdate(
+        obraId,
+        {
+          ...updateData,
+          estadoSigla: estados.find((state) => state.nome === estado)?.sigla,
+        },
+        {
+          new: true,
+        }
+      );
+
+      await Promise.all(
+        caminhoes.map(async (caminhaoId) => {
+          const caminhao = await Caminhao.findById(caminhaoId);
+          if (caminhao) {
+            caminhao.obraAtual =
+              situacao === "Em andamento" ? obra.descricao : null;
+            await caminhao.save();
+          }
+        })
+      );
+
       if (!obra) {
         return res.status(404).json({ error: "Obra não encontrada" });
       }

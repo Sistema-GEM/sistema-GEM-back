@@ -89,4 +89,28 @@ module.exports = {
       res.status(500).json({ error: "Erro ao excluir o caminhão" });
     }
   },
+
+  async truckCount(req, res) {
+    try {
+      const caminhoes = await Caminhao.find();
+      const quantidade = {
+        disponiveis: 0,
+        total: caminhoes.length,
+        alugados: 0,
+      };
+
+      caminhoes.forEach((e) => {
+        if (e.obraAtual) {
+          quantidade.alugados++;
+        } else {
+          quantidade.disponiveis++;
+        }
+      });
+
+      res.json(quantidade);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Erro ao fazer contagem" });
+    }
+  },
 };
