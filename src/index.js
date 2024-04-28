@@ -1,3 +1,5 @@
+require("dotenv/config");
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -9,12 +11,9 @@ app.use(express.json());
 app.use(cors());
 app.use("/", routes);
 
-const port = 3000;
+const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 
 app.listen(port, () => {
-  mongoose.connect(
-    // "mongodb+srv://gemtransportessite:O0Xb0p50gkSCMIyT@gembd.mc7cluc.mongodb.net/?retryWrites=true&w=majority&appName=GemBD"
-    "mongodb+srv://usercarlos:usercarlos123@gembd.mc7cluc.mongodb.net/?retryWrites=true&w=majority&appName=GemBD"
-  );
+  mongoose.connect(process.env.MONGO_KEY);
   console.log("App running");
 });
