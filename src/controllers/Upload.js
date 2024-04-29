@@ -2,7 +2,7 @@ const fs = require("fs");
 const multer = require("multer");
 const { google } = require("googleapis");
 
-const google_api_pasta = "1VGBwa7Nz3QavrXZzXHp9g5auDveVUwmw";
+const google_api_pasta = process.env.GOOGLE_DRIVE_API_KEY;
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
