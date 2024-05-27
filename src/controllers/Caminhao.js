@@ -92,7 +92,7 @@ module.exports = {
 
   async truckCount(req, res) {
     try {
-      const caminhoes = await Caminhao.find();
+      const caminhoes = await Caminhao.find(req.query);
       const quantidade = {
         disponiveis: 0,
         total: caminhoes.length,
@@ -111,6 +111,24 @@ module.exports = {
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "Erro ao fazer contagem" });
+    }
+  },
+
+  async list(req, res) {
+    try {
+      const caminhoes = await Caminhao.find();
+
+      const list = caminhoes
+        .map((caminhao) => ({
+          label: caminhao.numeroFrota,
+          value: caminhao.numeroFrota,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+
+      res.json(list);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Erro ao listar caminhoes" });
     }
   },
 };

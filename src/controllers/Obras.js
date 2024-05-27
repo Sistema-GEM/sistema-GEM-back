@@ -2,6 +2,7 @@ const Obra = require("../models/Obras");
 const Caminhao = require("../models/Caminhao");
 
 const { estados } = require("../utils/estados");
+const { diferenciaCaminhao } = require("../utils/functions");
 
 module.exports = {
   async create(req, res) {
@@ -91,6 +92,8 @@ module.exports = {
     const { caminhoes, situacao, estado } = req.body;
 
     try {
+      const obraAnterior = await Obra.findById(obraId);
+      const caminhoesRemovidos = diferenciaCaminhao(obraAnterior, req.body);
       const obra = await Obra.findByIdAndUpdate(
         obraId,
         {
@@ -112,6 +115,19 @@ module.exports = {
           }
         })
       );
+
+      // caso caminhao tenha sido removido da obra
+      if (caminhoesRemovidos?.length) {
+        await Promise.all(
+          caminhoesRemovidos.map(async (caminhaoId) => {
+            const caminhao = await Caminhao.findById(caminhaoId);
+            if (caminhao) {
+              caminhao.obraAtual = null;
+              await caminhao.save();
+            }
+          })
+        );
+      }
 
       if (!obra) {
         return res.status(404).json({ error: "Obra não encontrada" });

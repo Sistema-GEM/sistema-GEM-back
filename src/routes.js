@@ -12,6 +12,7 @@ routes.post("/login", UserController.login);
 routes.post("/caminhao", CaminhaoController.create);
 routes.get("/caminhao", CaminhaoController.getAll);
 routes.get("/caminhao/quantidade", CaminhaoController.truckCount);
+routes.get("/caminhao/listar", CaminhaoController.list);
 routes.get("/caminhao/:id", CaminhaoController.getById);
 routes.put("/caminhao/:id", CaminhaoController.update);
 routes.delete("/caminhao/:id", CaminhaoController.destroy);
