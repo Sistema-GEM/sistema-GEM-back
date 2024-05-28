@@ -117,11 +117,12 @@ module.exports = {
   async list(req, res) {
     try {
       const caminhoes = await Caminhao.find();
+      const { fieldName } = req.query;
 
       const list = caminhoes
         .map((caminhao) => ({
-          label: caminhao.numeroFrota,
-          value: caminhao.numeroFrota,
+          label: caminhao[fieldName],
+          value: caminhao[fieldName],
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
 
