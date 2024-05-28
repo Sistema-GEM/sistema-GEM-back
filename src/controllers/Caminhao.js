@@ -12,7 +12,7 @@ module.exports = {
 
   async getAll(req, res) {
     const page = parseInt(req.query.page) || 1; // Página atual, padrão é 1
-    const pageSize = parseInt(req.query.pageSize) || 10; // Tamanho da página, padrão é 10
+    const pageSize = parseInt(req.query.pageSize) || 15; // Tamanho da página, padrão é 10
     const skip = (page - 1) * pageSize; // Quantidade de itens para pular
 
     // Adiciona o filtro para o campo "proprietário"
@@ -28,6 +28,15 @@ module.exports = {
     }
 
     const filter = { ...query };
+
+    if (filter.status) {
+      if (filter.status === "Alugado") {
+        filter.obraAtual = { $ne: null };
+      } else if (filter.status === "Diponível") {
+        filter.obraAtual = null;
+      }
+      delete filter.status;
+    }
 
     try {
       const totalItems = await Caminhao.countDocuments(filter);
@@ -92,7 +101,18 @@ module.exports = {
 
   async truckCount(req, res) {
     try {
-      const caminhoes = await Caminhao.find(req.query);
+      const filter = req.query;
+
+      if (filter.status) {
+        if (filter.status === "Alugado") {
+          filter.obraAtual = { $ne: null };
+        } else if (filter.status === "Diponível") {
+          filter.obraAtual = null;
+        }
+        delete filter.status;
+      }
+
+      const caminhoes = await Caminhao.find(filter);
       const quantidade = {
         disponiveis: 0,
         total: caminhoes.length,
