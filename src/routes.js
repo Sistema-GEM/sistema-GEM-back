@@ -27,6 +27,7 @@ routes.post(
   "/obras/verificar-status-caminhao",
   ObraController.verificarAssociacaoCaminhoes
 );
+routes.delete("/obras/:id", ObraController.destroy);
 
 routes.get("/documento/", DocumentoController.getAll);
 routes.post("/documento/", DocumentoController.create);

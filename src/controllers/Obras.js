@@ -141,6 +141,20 @@ module.exports = {
   async destroy(req, res) {
     try {
       const obra = await Obra.findByIdAndDelete(req.params.id);
+
+      const { caminhoes, situacao } = obra;
+      if (situacao === "Em andamento") {
+        await Promise.all(
+          caminhoes.map(async (caminhaoId) => {
+            const caminhao = await Caminhao.findById(caminhaoId);
+            if (caminhao) {
+              caminhao.obraAtual = null;
+              await caminhao.save();
+            }
+          })
+        );
+      }
+
       return res.send(obra);
     } catch (error) {
       res.status(500).json({ error: "Erro ao excluir a obra" });
