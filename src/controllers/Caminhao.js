@@ -11,11 +11,9 @@ module.exports = {
   },
 
   async getAll(req, res) {
-    const page = parseInt(req.query.page) || 1; // Página atual, padrão é 1
-    const pageSize = parseInt(req.query.pageSize) || 15; // Tamanho da página, padrão é 10
-    const skip = (page - 1) * pageSize; // Quantidade de itens para pular
-
-    // Adiciona o filtro para o campo "proprietário"
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 15;
+    const skip = (page - 1) * pageSize;
 
     const query = req.query;
 
@@ -40,11 +38,28 @@ module.exports = {
 
     try {
       const totalItems = await Caminhao.countDocuments(filter);
-      const totalPages = Math.ceil(totalItems / pageSize); // Calcula o total de páginas
+      const totalPages = Math.ceil(totalItems / pageSize);
 
-      const caminhoes = await Caminhao.find(filter)
-        .skip(skip) // Pula os itens necessários para a paginação
-        .limit(pageSize); // Limita o número de itens por página
+      const caminhoes = await Caminhao.aggregate([
+        { $match: filter },
+        {
+          $addFields: {
+            numeroFrotaInt: {
+              $cond: {
+                if: {
+                  $regexMatch: { input: "$numeroFrota", regex: /^[0-9]+$/ },
+                },
+                then: { $toInt: "$numeroFrota" },
+                else: 1000000,
+              },
+            },
+          },
+        },
+        { $sort: { numeroFrotaInt: 1 } },
+        { $skip: skip },
+        { $limit: pageSize },
+        { $project: { numeroFrotaInt: 0 } },
+      ]);
 
       res.json({
         page,
