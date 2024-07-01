@@ -36,6 +36,10 @@ module.exports = {
       delete filter.status;
     }
 
+    if (filter.tipoImplemento === " ") {
+      filter.tipoImplemento = { $exists: false };
+    }
+
     try {
       const totalItems = await Caminhao.countDocuments(filter);
       const totalPages = Math.ceil(totalItems / pageSize);
@@ -125,6 +129,10 @@ module.exports = {
           filter.obraAtual = null;
         }
         delete filter.status;
+      }
+
+      if (filter.tipoImplemento === " ") {
+        filter.tipoImplemento = { $exists: false };
       }
 
       const caminhoes = await Caminhao.find(filter);
